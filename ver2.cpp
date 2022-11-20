@@ -8,7 +8,7 @@ int RangedRand(int range_min, int range_max)
     int r=((double)rand() / RAND_MAX) * (range_max - range_min) + range_min;
     return r;
 }
-//  同じ文字列かどうか反転する
+
 bool isSameStr(string str1,string str2){
     if(str1.size()!=str2.size())return false;
 
@@ -18,7 +18,6 @@ bool isSameStr(string str1,string str2){
     }
     return true;
 }
-//  文字列間の違う文字の数を数える
 int getDiffBetweenStrs(string str1,string str2){
     
     int diff=0;
@@ -27,7 +26,7 @@ int getDiffBetweenStrs(string str1,string str2){
 
     return diff;
 }
-//  文字列の各桁を確立epsで反転する
+
 void addErrorToString(string& str,double eps){
     int len=str.size();
     rep(i,len){
@@ -45,36 +44,6 @@ void printDebug(int index,string nowHk,string original_graph){
         cout<<"# original_graph "<<original_graph<<endl;
         return;
 }
-//  UnionFindでグラフの構造を管理する
-struct UnionFind {
-    vector<int> par;
-
-    UnionFind() { }
-    UnionFind(int n) : par(n, -1) { }
-    void init(int n) { par.assign(n, -1); }
-    
-    int root(int x) {
-        if (par[x] < 0) return x;
-        else return par[x] = root(par[x]);
-    }
-    
-    bool issame(int x, int y) {
-        return root(x) == root(y);
-    }
-    
-    bool merge(int x, int y) {
-        x = root(x); y = root(y);
-        if (x == y) return false;
-        if (par[x] > par[y]) swap(x, y); // merge technique
-        par[x] += par[y];
-        par[y] = x;
-        return true;
-    }
-    
-    int size(int x) {
-        return -par[root(x)];
-    }
-};
 
 #define debug 0
 int main(){
@@ -88,14 +57,15 @@ int main(){
     
     multimap<string,int>graphStr;
     string graphStrVec[M];
-    vector<vector<int>> V(N);
+
     rep(i,M){
             //ランダムにグラフを作成
-        bool connect[N+2][N+2]={};
+        bool connect[N][N]={};
         rep(k,i){
-            int x=RangedRand(0,N-1);
-            int y=RangedRand(0,N-1);
+            int x=RangedRand(0,N);
+            int y=RangedRand(0,N);
             if(x==y){
+                k--;
                 continue;
             }
             connect[x][y]=true;
@@ -107,8 +77,6 @@ int main(){
                 if(connect[k][l]){
                     cout<<"1";
                     tmpStr.push_back('1');
-                    v[k].push_back(l);
-                    v[l].push_back(k);
                 }else{
                     cout<<"0";
                     tmpStr.push_back('0');
@@ -124,15 +92,6 @@ int main(){
     rep(i,M){
         addErrorToString(graphStrVec[i],eps);
     }
-    //  連結数を数える
-    int groupSize[N]={};
-    rep(i,N)groupSize[i]=-1;
-    rep(i,N){
-        for(auto next:v[i]){
-
-        }
-    }
-
     //  グラフの辺の数
     int graphVNum[M]={};
     rep(i,M)graphVNum[i]=0;
@@ -182,6 +141,18 @@ int main(){
         printDebug(index,nowHk,graphStrVec[index]);
 #endif
         cout<<index<<endl;
+        
+        // bitset<64> bs(131uL);
+        // string bsStr=bs.to_string();
+
+        // auto it =graphStr.find(bsStr);
+        
+        // if(it!=graphStr.end()){
+        //     cout<<it->second<<endl;
+        // }
+        // else{
+        //     cout<<RangedRand(0,M-1)<<endl;
+        // }
 
     }
     
