@@ -76,19 +76,72 @@ struct UnionFind {
     }
 };
 
+//  01の文字列からグラフを生成する
+UnionFind getGraphFromString(string graph,int n){
+    int index=0;
+    UnionFind uf(n);
+    for(int i=0;i<n;i++){
+        for(int k=i+1;k<n;k++){
+            if(graph[index]=='1'){
+                uf.merge(i,k);
+            }
+            index++;
+        }
+    }
+    return uf;
+}
+//  unionFindのグラフの構造を文字列に変換
+string getStringFromUnionFind(UnionFind uf,int N){
+    map<int,int>mp;
+    rep(i,N){
+        int size,root;
+        root=uf.root(i);
+        size=uf.size(i);
+        auto it=mp.find(root);
+        // <key,value>=<root,size>でmapに格納する
+        if(it==mp.end()){
+            mp.insert(make_pair(root,size));
+        }
+        //cout<<"ufstring     "<<i<<" tree size ="<<uf_from_string.size(i)<<" root = " <<uf_from_string.root(i) <<endl;
+        #if debug
+        cout<<"elem         "<<i<<" tree size ="<<uf.size(i)<<" root = " <<uf.root(i) <<endl;
+        #endif
+    }
+    auto it=mp.begin();
+    vector<int>vecInt;
+    while(it!=mp.end()){
+        #if debug
+        cout<<"root = "<<it->first<<" size = "<<it->second<<endl;
+        #endif
+        vecInt.push_back(it->second);
+        it++;
+    }  
+    sort(vecInt.begin(),vecInt.end());
+    string str;
+    rep(i,vecInt.size()){
+        str.insert(0,to_string(vecInt[i]));
+    }
+    return str;
+}
+//  グラフを表す01の文字列を構造を表す文字列に変換する
+string get01toString(string str,int N){
+    return getStringFromUnionFind(getGraphFromString(str,N),N);
+}
+
+
 #define debug 0
 int main(){
     int M;
     double eps;
     cin>>M>>eps;
-    int N=4;
+    int N=(int)(floor)(sqrt(10*(double)M));
+    N=4;
     cout<<N<<endl;
-    vector<vector<int>>graph(N);
-
-    
     multimap<string,int>graphStr;
+
     string graphStrVec[M];
-    vector<vector<int>> V(N);
+    string graphStructureStrings[M];
+    //  M個のグラフを生成
     rep(i,M){
             //ランダムにグラフを作成
         bool connect[N+2][N+2]={};
@@ -99,7 +152,6 @@ int main(){
                 continue;
             }
             connect[x][y]=true;
-            //cout<<"rand ="<<RangedRand(0,N)<<endl;
         }
         string tmpStr="";
         for(int k=0;k<N;k++){
@@ -107,54 +159,38 @@ int main(){
                 if(connect[k][l]){
                     cout<<"1";
                     tmpStr.push_back('1');
-                    v[k].push_back(l);
-                    v[l].push_back(k);
                 }else{
                     cout<<"0";
                     tmpStr.push_back('0');
                 }
             }
         }
-        //graphStr.insert(make_pair(tmpStr,i));
-        graphStrVec[i]=tmpStr;
         cout<<endl;
+        //rep(k,i)tmpStr[k]='1';  //グラフの辺の本数を変更
+        //addErrorToString(tmpStr,eps);
+
+        graphStrVec[i]=tmpStr;  //作成したグラフ
+        graphStructureStrings[i]=get01toString(tmpStr,N);   //グラフの構造を保存
     }
 
     //ランダムなエラー率を反映する
-    rep(i,M){
-        addErrorToString(graphStrVec[i],eps);
-    }
-    //  連結数を数える
-    int groupSize[N]={};
-    rep(i,N)groupSize[i]=-1;
-    rep(i,N){
-        for(auto next:v[i]){
-
-        }
-    }
-
-    //  グラフの辺の数
-    int graphVNum[M]={};
-    rep(i,M)graphVNum[i]=0;
-   
-    int p=(M*(M-1))/2;
-    rep(i,M){
-        rep(k,p){
-            if(graphStrVec[i][k]=='1')graphVNum[i]++;
-        }
-        #if debug
-        cout<<"# index "<<i<<" num of edge "<<graphVNum[i]<<endl;
-        #endif 
-    }
+    // rep(i,M){
+    //     addErrorToString(graphStrVec[i],eps);
+    // }
+    
 
     rep(i,100){
         string nowHk;
         cin>>nowHk;
         int index=0;
+        int min=1e9;
+        //  現在得たグラフHkの構造
+        string nowStructureHk=get01toString(nowHk,N);
+        
 #if 0
         //距離が最も近いものを探す
         rep(k,M){
-            int nowDiff=getDiffBetweenStrs(nowHk,graphStrVec[k]);
+            int nowDiff=getDiffBetweenStrs(nowStructureHk,graphStructureStrings[k]);
             if(min>nowDiff){
                 min=nowDiff;
                 index=k;
@@ -164,7 +200,7 @@ int main(){
 #elif 0
         //完全に一致するものを探す
         rep(k,M){
-            if(isSameStr(nowHk,graphStrVec[k])){
+            if(isSameStr(nowStructureHk,graphStructureStrings[k])){
                 index=k;
                 break;
             }
@@ -175,11 +211,12 @@ int main(){
         int hLoadNum=0;
         rep(k,len)if(nowHk[k]=='1')hLoadNum++; 
 
-        index=min(hLoadNum,M-1);
+        index=std::min(hLoadNum,M-1);
 #endif
 
-#if debug
-        printDebug(index,nowHk,graphStrVec[index]);
+#if 0 //debug
+        //printDebug(index,nowHk,graphStrVec[index]);
+        printDebug(index,nowStructureHk,graphStructureStrings[index]);
 #endif
         cout<<index<<endl;
 
